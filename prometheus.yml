@@ -1,0 +1,34 @@
+
+# Configuracion de Prometheus - AndysMotors (EP2 ADY1103)
+# Modelo pull: cada scrape_interval consulta /metrics de cada target.
+global:
+  scrape_interval: 15s       # frecuencia de recoleccion
+  evaluation_interval: 15s   # frecuencia de evaluacion de reglas
+
+scrape_configs:
+  # 1) Prometheus se monitorea a si mismo
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # 2) Plataformas de negocio de AndysMotors (metricas tecnicas y de negocio)
+  - job_name: "andys-plataformas"
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - "172.31.41.87:8081"   # web: sitio publico
+          - "172.31.41.87:8082"   # stock: consulta de vehiculos
+          - "172.31.41.87:8083"   # agenda: agendamiento de visitas
+          - "172.31.41.87:8084"   # crm: CRM y ventas
+          - "172.31.41.87:8085"   # pagos: sistema de pagos
+          - "172.31.41.87:8086"   # gateway: proveedor externo de pagos
+        labels:
+          empresa: "andysmotors"
+
+  # 3) Balanceador HAProxy (exporter integrado)
+  - job_name: "haproxy"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["172.31.41.87:8404"]
+        labels:
+          rol: "borde"
